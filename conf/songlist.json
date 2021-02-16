@@ -1,0 +1,120 @@
+{
+	"aogeba":{
+		"10":{
+			"name": "aogeba10",
+			"soramimi":["explanation","アオゲラ","オオワシ","パカ","ライオン","melody","オシドリ","ニワトリ","ハセ","アカトビ"],
+			"original": ["explanation","あおげば","とうとし","わが","しのおん","melody","おしえの","にわにも","はや","いくとせ"],
+			"time":       [8620,        11262,    14065,  15489, 19212,   19673,   22370,   25106,   26597, 30289],
+			"isSong":     [false,        true,     true,   true,  true,   false,    true,    true,   true,  true]
+		},
+		"2":{
+			"name": "aogeba2",
+			"soramimi":["explanation","アオゲラ","ゾウ アシナガシギ テン","melody","オシドリ","ニワトリ","ハセ","アカトビ"],
+			"original": ["explanation","あおげば","とうとしわがしのおん","melody","おしえの","にわにも","はや","いくとせ"],
+			"time":         [8620,      11262,        19212,        19673,   22370,   25106,   26597,   30289],
+			"isSong":       [false,      true,        true,         false,    true,    true,    true,   true]
+		},
+		"0":{
+			"name": "aogeba0",
+			"soramimi":["explanation","アオゲラ","ウトウ シカ ウシ ノガン","melody","ウシ ベニヒワ ヒメハヤ","ヤク トキ"],
+			"original": ["explanation","あおげば","とうとしわがしのおん","melody","おしえのにわにもはや","いくとせ"],
+			"time":        [8620,       11262,       19212,         19673,      26597,         30289],
+			"isSong":     [false,       true,        true,          false,     true,           true]
+		}
+	},
+	"kagome":{
+		"10":{
+			"name": "kagome10",
+			"soramimi":["explanation","カモメ","カモメ","コモンヨタカ","ゾリラ","イエイヌ","アカマタ","シロウオ","ショウジョウ","マーラ"],
+			"original": ["explanation","かごめ","かごめ","かごのなかの","とりは","いついつ","であった","うしろの","しょうめん","だあれ"],
+			"time":          [8620,      10589, 12622,    14623,    16688,    18673, 20548,   21573,    22613,    24299],
+			"isSong":        [false,      true, true,     true,     true,     true,   true,   true,     true,     true]
+		},
+		"2":{
+			"name": "kagome2",
+			"soramimi":["explanation","カモメ","カモメ","カグー ナガノゴリ マエツ エツ","レア ブタ","ウシ ロバ","ヒョウ メナダ アビ"],
+			"original": ["explanation","かごめ","かごめ","かごのなかのとりはいついつ","であった","うしろの","しょうめんだあれ"],
+			"time":         [8620,      10589,  12622,       18673,            20548,   21573,       24299],
+			"isSong":[false, true, true, true, true, true, true]
+		},
+		"0":{
+			"name": "kagome0",
+			"soramimi":["explanation","カモメ","カモメ","カグー ナガノゴリ サイ クイ ツミ ラット","ウシ ロバ","ヒョウ メナダ アビ"],
+			"original": ["explanation","かごめ","かごめ","かごのなかのとりはいついつであった","うしろの","しょうめんだあれ"],
+			"time":         [8620,       10589,12622,          20548,                21573,      24299],
+			"isSong":        [false,      true, true,           true,                 true,      true]
+		}
+	},
+	"katatsumuri":{
+		"10":{
+			"name": "katatsumuri10",
+			"soramimi": ["explanation","センダイムシクイ","カイツブリ","オオバン","アカマタ","ドンコ","サル","ツミ","ダツ","ヤギ","ダツ","メダカ","ダツ"],
+			"original": ["explanation","でんでんむしむし","かたつむり","おまえの","めだまは","どこに","ある","つの","だせ","やり","だせ","めだま","だせ"],
+			"time":        [8620,         11437,        14276,     15704,    17083,   18108, 19826,20560,21261,21971,22608,23899,24875],
+			"isSong":      [false,        true,         true,      true,      true,    true,  true, true, true, true, true, true, true]
+		},
+		"2":{
+			"name": "katatsumuri2",
+			"soramimi": ["explanation","センダイムシクイ","カイツブリ","オオバン","メダマヤマネ ニアラ","ツミ","ダツ","ヤギ","ダツ","メダカ","ダツ"],
+			"original": ["explanation","でんでんむしむし","かたつむり","おまえの","めだまはどこに ある","つの","だせ","やり","だせ","めだま","だせ"],
+			"time":          [8620,         11437,      14276,     15704,   19826,          20560, 21261,21971,22608,23899,24875],
+			"isSong":       [false,         true,       true,      true,     true,          true, true, true, true, true, true]
+		},
+		"0":{
+			"name": "katatsumuri0",
+			"soramimi": ["explanation","テン テン ウシ ウシ","カバ ツミ リス マエツ","メダカ トド コイ","サル","ツミ","ダツ","ヤギ","ダツ","メダカ","ダツ"],
+			"original": ["explanation","でんでんむしむし","かたつむりおまえの","めだまはどこに","ある","つの","だせ","やり","だせ","めだま","だせ"],
+			"time":         [8620,         11437,          15704,          18108,     19826,20560,21261,21971,22608,23899,24875],
+			"isSong":       [false,       true,            true,           true,       true, true, true, true, true, true, true]
+		}
+	},
+	"momotaro":{
+		"10":{
+			"name": "momotaro10",
+			"soramimi":["explanation","カオジロガン","カオジロガン","オバシギ","ジュケイ","キジインコ","ヒツジ","タマシギ","ツルクイナ"],
+			"original": ["explanation","ももたろさん","ももたろさん","おこしに","つけた","きびだんご","ひとつ","わたしに","くださいな"],
+			"time":          [8620,      10806,       13085,     14126,   15224,   17348,    18530,   19628,21668],
+			"isSong":        [false,      true,        true,      true,    true,    true,    true,    true, true]
+		},
+		"2":{
+			"name": "momotaro2",
+			"soramimi":["explanation","モコクロサイ","モモイロインコ コシギ","ジュケイ","キジインコ","ヒト ツミ タシギ","クマ クイナ"],
+			"original": ["explanation","ももたろさん","ももたろさんおこしに","つけた","きびだんご","ひとつわたしに","くださいな"],
+			"time":        [8620,         10806,        14126,         15224,    17348,     19628,      21668],
+			"isSong":      [false,        true,         true,          true,      true,      true,      true]
+		},
+		"0":{
+			"name": "momotaro0",
+			"soramimi":["explanation","モコクロサイ","モモイロインコ コシギ","サケ トキ イランド","ヒト ツミ タシギ","クマ クイナ"],
+			"original": ["explanation","ももたろさん","ももたろさんおこしに","つけたきびだんご","ひとつわたしに","くださいな"],
+			"time":       [8620,         10806,       14126,             17348,         19628,        21668],
+			"isSong":     [false,        true,         true,             true,           true,        true]
+		}
+	},
+	"umi":{
+		"10":{
+			"name": "umi10",
+			"soramimi":["explanation","ウミウ","シロクマ","オニクイナ","タイラ","コブウシ","ヒヒ","スズメ"],
+			"original": ["explanation","うみは","ひろいな","おおきいな","つきが","のぼるし","ひが","しずむ"],
+			"time":        [8620,        10503,  12619,    16588,   18560,  20532,   21254,24725],
+			"isSong":      [false,        true,  true,     true,    true,    true,    true, true]
+		},
+		"2":{
+			"name": "umi2",
+			"soramimi":["explanation","ウミウ","シロクマ","オニクイナ","トキ ボノボ ウシ","ヒヒ","スズメ"],
+			"original": ["explanation","うみは","ひろいな","おおきいな","つきがのぼるし","ひが","しずむ"],
+			"time":        [8620,        10503,12619,     16588,    20532,        21254,24725],
+			"isSong":      [false,        true,true,      true,      true,        true, true]
+		},
+		"0":{
+			"name": "umi0",
+			"soramimi":["explanation","ウマ ヒヒ クイナ","ゾウ クイナ","トキ ボノボ ウシ","ヒヒ","スズメ"],
+			"original": ["explanation","うみはひろいな","おおきいな","つきがのぼるし","ひが","しずむ"],
+			"time":         [8620,       12619,         16588,   20532,        21254,24725],
+			"isSong":        [false,      true,         true,     true,         true, true]
+		}
+	}
+
+
+
+}

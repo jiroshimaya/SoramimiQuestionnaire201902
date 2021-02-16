@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<!--
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/21.0.1/jcanvas.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/css/theme.default.min.css">
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/js/jquery.tablesorter.min.js"></script>
+ -->
+
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<title>Audience Response System</title>
+	<meta name="description" content="Audience Response System" />
+	<meta name="author" content="Jiro Shimaya" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<script src="script/jquery/jquery-1.11.0.min.js"></script>
+	<script src="script/jquery/jquery.cookie.js"></script>
+	<link href="script/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<script src="script/bootstrap/js/bootstrap.min.js"></script>
+	<script src="js/AjaxUtils.js"></script>
+	<script src="js/nicoscreen.js"></script>
+</head>
+<body>
+	<h2 class="message">イヤホンを装着してください</h2>
+	<h2 class="message">音声を上から順に最後まで再生してください</h2>
+	<h2 class="message">歌の途中で少しでも面白く感じるところがあったら下の「笑」のボタンをクリックしてください</h2>
+	<button class="btn btn-primary btn-block send funny" style="display:block;width:1000px"><font size="+2">笑</font><br>(面白いときこのボタンかスペースキーを押してください)</button>
+	<div class="sound">
+	</div>
+	<div id="nicoscreen" style="width:1000px">
+	</div>
+</body>
+<script type="text/javascript">
+	//urlからパスワードを受け取る関数
+	function getUrlParam(name, url) {
+	    if (!url) url = window.location.href;
+	    name = name.replace(/[\[\]]/g, "\\$&");
+	    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+	        results = regex.exec(url);
+	    if (!results) return null;
+	    if (!results[2]) return '';
+	    return decodeURIComponent(results[2].replace(/\+/g, " "));
+	}
+
+	var startTime = new Date();
+	function setStartTime(){
+		startTime = new Date();
+	}
+	function elapsedTime(){
+		var endTime = new Date();
+		return (endTime - startTime);
+	}
+
+	function tweet(input){
+		var obj = {
+
+				//基本情報が設定できます
+				"base":{
+					color:"white", //文字の色を指定します
+					speed:"slow", //文字が流れるスピードを指定します。slow/fast/normal
+					interval:"fast",//文字が流れる間隔を指定します。slow/fast/normal
+					font_size:"30px", //フォントのサイズを指定します。
+					loop:false //文字が最後まで流れた後に、繰り返すかどうか　true/false
+
+				},
+
+				//ここに、重ねるコメントを登録します。個数制限はありません。
+				"comments":[
+					//"sayounara",
+					//"douitashimashite",
+					input
+				]
+			};
+
+			nicoscreen.set(obj);
+			nicoscreen.start();
+	}
+
+	function askName(){
+		console.log($.cookie("user_name"));
+		if(getUrlParam("askname") == "yes" || !$.cookie("user_name")){
+			user_name = window.prompt("フルネームをひらがなで入力してください(例: しまやじろう)");
+			while(user_name=="" || user_name == null){
+				user_name = window.prompt("名前が空欄です。名前を入力してください");
+			}
+			$.cookie("user_name",user_name);
+			console.log($.cookie("user_name"));
+		}else{
+			user_name = $.cookie("user_name");
+		}
+	}
+
+	function makeLyricTable(param){
+		var original = param["original"];
+		var soramimi = param["soramimi"];
+		var issong = param["isSong"];
+
+		var table = $("<table><tr class='orginal'></tr><tr class='soramimi'></table>");
+		for(var i = 0; i<original.length; i++){
+			if(issong[i]){
+				table.find("tr.orginal").append("<td><font size='+1'>&nbsp"+original[i]+"&nbsp</font></td>");
+				table.find("tr.soramimi").append("<td><b><font size='+2'>&nbsp"+soramimi[i]+"&nbsp</font></b></td>");
+			}
+		}
+		table.find("td").css("text-align","center");
+		return table;
+	}
+
+	function setLyricTable(param){
+		$("#nicoscreen").html(makeLyricTable(param));
+	}
+
+	function setSong(param){
+	}
+
+	function setSongList(param){
+		var songs = param;
+		//var test = [1,2,3,4,5];
+		//console.log(JSON.stringify(shuffleArray(test)));
+
+		var area = $("div.sound");
+		var table = area.append("<table></table>");
+		songs.forEach(function(element,index){
+			console.log(JSON.stringify(element));
+			var name = element["name"];
+			var filepath = "sound/"+name+".wav";
+
+			var tr = $("<tr></tr>");
+			//tr.append("<td ><h3>"+element["name"]+"</h3></td>")
+			tr.append("<td style='vertical-align:middle'><h3>歌"+String(index+1)+"</h3></td>")
+			tr.append("<td style='vertical-align:middle'><audio controls src='"+filepath+"' title='"+name+"'></audio></td>");
+			tr.append("<td></td>");
+			tr.find("td:last").append(makeLyricTable(element));
+			tr.append("<td></td>");
+			table.append(tr);
+
+		});
+
+	}
+
+
+ 	function getRandomInt(max) {
+		return Math.floor(Math.random() * Math.floor(max));
+	}
+
+
+	// 配列ランダムソート（シャッフル）関数
+	function shuffleArray(arr) {
+
+	    var n = arr.length;
+	    var temp = 0, i = 0;
+
+	    while (n) {
+	        i = Math.floor(Math.random() * n--);
+	        temp = arr[n];
+	        arr[n] = arr[i];
+	        arr[i] = temp;
+	    }
+	    return arr;
+	}
+
+	function loadSongListJson(filepath){
+		console.log(filepath);
+		$.ajaxSetup({async: false});
+		$.get(filepath, function(data){
+			songlist = data;
+		});
+		$.ajaxSetup({async: true});
+
+	}
+
+	var ag = new AjaxGateway();
+	//var user_name = "";
+	var nowstate = ["non-playing","non-playing"];
+	var lyriclist = {};
+	var songparam = {};
+	var songlist = {};
+	var endlist = [];
+	var orderlist = {};
+	var songname = "";
+	var sessionNumber = 0;
+	//var last_id = 0;
+	//var connection_info = new ConnectionInfo(last_id);
+
+	loadSongListJson("conf/songlist.json");
+	//orderlistの読み込み
+	$.ajaxSetup({async: false});
+	$.get("conf/songorder.json", function(data){
+		orderlist = data;
+	});
+	$.ajaxSetup({async: true});
+
+
+
+	$(window).on("load", function(e){
+
+
+		console.log($.cookie("user_name"));
+		if(getUrlParam("askname") == "yes" || !$.cookie("user_name")){
+			user_name = window.prompt("フルネームをひらがなで入力してください(例: しまやじろう)");
+			while(user_name=="" || user_name == null){
+				user_name = window.prompt("名前が空欄です。名前を入力してください");
+			}
+			$.cookie("user_name",user_name);
+			console.log($.cookie("user_name"));
+		}else{
+			user_name = $.cookie("user_name");
+		}
+
+		//alert("past_songs"+$.cookie("past_songs"));
+
+		if(getUrlParam("resetsong") == "yes"){
+			//alert("reset!!");
+			$.cookie("past_songs","");
+		}
+		songname = getUrlParam("song");
+		var pastsongs = [];
+		//alert("past_songs"+$.cookie("past_songs"));
+		//alert($.cookie("past_songs"));
+
+		if(songname == "random"){
+			//alert("past_songs"+$.cookie("past_songs"));
+			if($.cookie("past_songs") == ""){
+				//console.log("pastsong"+JSON.stringify(pastsongs));
+				//console.log("past_songs"+$.cookie("past_songs"));
+			}
+			else{
+				console.log("not null cookie");
+				pastsongs = JSON.parse($.cookie("past_songs"));
+				console.log("cookie:"+$.cookie("past_songs"));
+				console.log("val:"+JSON.stringify(pastsongs));
+			}
+			console.log(JSON.stringify(pastsongs));
+			var isAll = true;
+			var songs = ["aogeba","kagome","katatsumuri","momotaro","umi"];
+			songs.forEach(function(element){
+				if(pastsongs.indexOf(element) == -1){
+					isAll = false;
+					console.log("element:"+element);
+					return;
+				}
+			});
+			if(isAll == true){
+				alert("all songs are already listend");
+			}else{
+
+				while(true){
+					songname = songs[getRandomInt(songs.length)];
+					if(pastsongs.indexOf(songname) == -1){
+						break;
+					}
+				}
+				console.log(songname);
+				pastsongs.push(songname);
+				console.log(JSON.stringify(pastsongs));
+				$.cookie("past_songs",JSON.stringify(pastsongs));
+			}
+		}
+		console.log("songname"+songname);
+
+
+		switch(songname){
+		case "aogeba":
+		case "kagome":
+		case "katatsumuri":
+		case "momotaro":
+		case "umi":
+			songparam = songlist[songname];
+			break;
+		default:
+			alert("unknown_songname:"+songparam);
+			//return;
+			break;
+		}
+
+
+
+		//alert(user_name);
+		ag.Login();
+		console.log("=====================");
+		console.log("songname"+songname);
+		console.log(JSON.stringify(songlist[songname]));
+		//setSong(songlist[songname]);
+		var times = pastsongs.length-1;
+		var order = orderlist[songname][times];
+		var songs = [];
+		order.forEach(function(element){
+			var tmp = songlist[songname];
+			songs.push(tmp[String(element)]);
+		})
+		//var songs = [songlist[songname]["0"],songlist[songname]["2"],songlist[songname]["10"]];
+
+		setSongList(songs);
+
+
+		setEventTrigger();
+
+
+	});
+	//windowを閉じたらログアウト情報を保存
+	$(window).on("unload",function(e){
+		ag.Logout();
+	});
+
+	function countSongTime(param){
+		var original = param["original"];
+		var soramimi = param["soramimi"];
+		var time = param["time"];
+		for(var i=0;i<time.length;i++){
+			time[i] -= 8620;
+		}
+		nowstate = [original[0],soramimi[0]];
+		console.log(nowstate);
+		for(var i=0;i<time.length-1;i++){
+			(function(index){
+				setTimeout(function(){
+					//setLyric(original[index+1],soramimi[index+1]);
+					nowstate = [original[index+1],soramimi[index+1]];
+					console.log(JSON.stringify(nowstate));
+				},time[index]);
+			})(i);
+		}
+
+		setStartTime();
+	}
+
+	function setEventTrigger(){
+		$('body').on("click","button.send.funny",function(){
+			//tweet("笑");
+			var param = {};
+			param["elapsed"] = elapsedTime();
+			param["original"] = nowstate[0];
+			param["soramimi"] = nowstate[1];
+			param["song"] = songname;
+			console.log(JSON.stringify(param));
+			ag.SendFunny(param["original"],param["soramimi"],param["elapsed"],param["song"]);
+		});
+
+		$('body').on("keypress", function(e){
+			if ( e.which == 32 ) {
+				$("button.send.funny").click();
+				return false;
+			}
+		});
+
+		$("video").on("play",function(){
+		});
+
+		$("video").on("ended",function(){
+			nowstate = ["not-playing","not-playing"];
+			window.close();
+		});
+
+		$("audio").on("play",function(eo){
+			//$("h1.message").css("display","none");
+			setStartTime();
+
+			var audio = $(eo.target);
+			var name = audio.attr("title");
+			var tmplist = songlist[songname];
+			var list = [];
+			for(key in tmplist){
+				if(tmplist[key]["name"] == name){
+					list = tmplist[key];
+					break;
+				}
+			}
+			var soramimi = list["soramimi"];
+			var original = list["original"];
+			var issong = list["isSong"];
+
+			list["song"]=list["name"];
+			countSongTime(list);
+
+
+			/*
+			var param = list;
+			param["soramimi"]=[];
+			param["original"]=[];
+			for(var i=0;i<soramimi.length;i++){
+				if(issong[i]){
+					param["soramimi"].push(soramimi[i]);
+					param["original"].push(original[i]);
+				}
+			}
+			console.log(JSON.stringify(param["soramimi"]));
+			setLyricTable(param);
+			*/
+		});
+
+		$("audio").on("ended",function(eo){
+			var audio = $(eo.target);
+			var name = audio.attr("title");
+			if(endlist.indexOf(name)==-1)
+				endlist.push(name);
+
+			if(endlist.length == $("audio").length){
+				alert("この曲はこれで終わりです。OKを押してアンケートに戻ってください");
+				window.close();
+			}
+
+		});
+
+
+	}
+
+
+
+
+
+
+</script>
+</html>

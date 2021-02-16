@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!--
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/21.0.1/jcanvas.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/css/theme.default.min.css">
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/js/jquery.tablesorter.min.js"></script>
+ -->
+
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<title>Audience Response System</title>
+	<meta name="description" content="Audience Response System" />
+	<meta name="author" content="Jiro Shimaya" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<script src="script/jquery/jquery-1.11.0.min.js"></script>
+	<script src="script/jquery/jquery.cookie.js"></script>
+	<link href="script/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<script src="script/bootstrap/js/bootstrap.min.js"></script>
+	<script src="js/AjaxUtils.js"></script>
+	<script src="js/nicoscreen.js"></script>
+</head>
+<body>
+	<h1 class="message">イヤホンを装着してから動画を再生してください(なお動画の最初の１０秒位は無音です)</h1>
+	<h1 class="message">再生後は動画の指示に沿って評価を行ってください</h1>
+	<div id="nicoscreen" style="width:1000px">
+		<video src="movie/sakurambo_shortexp.mp4" width="1000px" controls></video>
+	</div>
+	<button class="btn btn-primary btn-block send funny" style="width:1000px"><font size="+2">笑</font><br>(面白いときこのボタンかスペースキーを押してください("笑"の文字が画面上に流れます))</button>
+</body>
+<script type="text/javascript">
+//urlからパスワードを受け取る関数
+function getUrlParam(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+	var startTime = new Date();
+	function setStartTime(){
+		startTime = new Date();
+	}
+	function elapsedTime(){
+		var endTime = new Date();
+		return (endTime - startTime);
+	}
+
+	function tweet(input){
+		var obj = {
+
+				//基本情報が設定できます
+				"base":{
+					color:"white", //文字の色を指定します
+					speed:"slow", //文字が流れるスピードを指定します。slow/fast/normal
+					interval:"fast",//文字が流れる間隔を指定します。slow/fast/normal
+					font_size:"30px", //フォントのサイズを指定します。
+					loop:false //文字が最後まで流れた後に、繰り返すかどうか　true/false
+
+				},
+
+				//ここに、重ねるコメントを登録します。個数制限はありません。
+				"comments":[
+					//"sayounara",
+					//"douitashimashite",
+					input
+				]
+			};
+
+			nicoscreen.set(obj);
+			nicoscreen.start();
+	}
+
+
+	var ag = new AjaxGateway();
+	//var user_name = "";
+	var nowstate = ["non-playing","non-playing"];
+	var lyriclist = {};
+	//var last_id = 0;
+	//var connection_info = new ConnectionInfo(last_id);
+
+	$(window).on("load", function(e){
+		console.log($.cookie("user_name"));
+
+		if(getUrlParam("askname") == "yes" || !$.cookie("user_name")){
+			user_name = window.prompt("名前をローマ字で入力してください(例: Jiro Shimaya)");
+			while(user_name=="" || user_name == null){
+				user_name = window.prompt("名前が空欄です。名前を入力してください");
+			}
+			$.cookie("user_name",user_name);
+			console.log($.cookie("user_name"));
+		}else{
+			user_name = $.cookie("user_name");
+		}
+
+		//alert(user_name);
+		ag.Login();
+	});
+	//windowを閉じたらログアウト情報を保存
+	$(window).on("unload",function(e){
+		ag.Logout();
+	});
+
+	function countSongTime(param){
+		var original = param["original"];
+		var soramimi = param["soramimi"];
+		var time = param["time"];
+		nowstate = [original[0],soramimi[0]];
+		console.log(nowstate);
+		for(var i=0;i<time.length-1;i++){
+			(function(index){
+				setTimeout(function(){
+					//setLyric(original[index+1],soramimi[index+1]);
+					nowstate = [original[index+1],soramimi[index+1]];
+				},time[index]);
+			})(i);
+		}
+
+		setStartTime();
+	}
+
+	//loadTimeSequence
+	$(function() {
+		$.get("conf/sakurambo_timing.txt", function(data){
+			lyriclist["time"] = [];
+			lyriclist["original"] = [];
+			lyriclist["soramimi"] = [];
+			var dataline = data.split("\n");
+			for(var i=0;i<dataline.length;i++){
+				//console.log(dataline[i]);
+				var tmp = dataline[i].split("\t");
+				if(tmp.length < 5)continue;
+
+				var ttime = tmp[3];
+				var original = tmp[5].split("_")[1];
+				var soramimi = tmp[5].split("_")[0];
+
+				lyriclist["time"].push(ttime-15750);
+				lyriclist["original"].push(original);
+				lyriclist["soramimi"].push(soramimi);
+			}
+			console.log(JSON.stringify(lyriclist));
+		});
+	});
+
+	function setEventTrigger(){
+		$('body').on("click","button.send.funny",function(){
+			tweet("笑");
+			var param = {};
+			param["elapsed"] = elapsedTime();
+			param["original"] = nowstate[0];
+			param["soramimi"] = nowstate[1];
+			param["song"] = "sakurambo";
+			console.log(JSON.stringify(param));
+			ag.SendFunny(param["original"],param["soramimi"],param["elapsed"],param["song"]);
+		});
+
+		$('body').on("keypress", function(e){
+			if ( e.which == 32 ) {
+				$("button.send.funny").click();
+				return false;
+			}
+		});
+
+		$("video").on("play",function(){
+			$("h1.message").css("display","none");
+			setStartTime();
+			countSongTime(lyriclist);
+		});
+
+		$("video").on("ended",function(){
+			nowstate = ["not-playing","not-playing"];
+			alert("この動画はこれで終わりです。アンケートに戻ってください");
+			window.close();
+		});
+
+	}
+
+
+
+	setEventTrigger();
+
+
+
+</script>
+</html>

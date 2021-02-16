@@ -1,0 +1,84 @@
+<html lang="en">
+<!--
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/css/theme.default.min.css">
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/js/jquery.tablesorter.min.js"></script>
+ -->
+
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<title>Audience Response System</title>
+	<meta name="description" content="Audience Response System" />
+	<meta name="author" content="Jiro Shimaya" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<script src="script/jquery/jquery-1.11.0.min.js"></script>
+	<link href="script/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<script src="script/bootstrap/js/bootstrap.min.js"></script>
+	<script src="js/AjaxUtils.js"></script>
+	<script src="script/js/Chart.js"></script>
+	<link href="script/tablesorter/theme.default.css" rel="stylesheet">
+	<script src="script/tablesorter/jquery.tablesorter.js"></script>
+
+</head>
+<body>
+<table class="comment tablesorter">
+  <thead>
+    <tr>
+      <th>user_name</th>
+      <th>user_id</th>
+      <th>time_stamp</th>
+      <th>opinion</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<button class="comment update">更新</button>
+</body>
+<script>
+
+	var ag = new AjaxGateway();
+	var last_id = 0;
+
+	$("table.comment").tablesorter();
+
+	function updateCommentList(content){
+		//console.log(JSON.stringify(content));
+		if(content == null)return;
+		for(var i=0;i<content.length;i++){
+			//alert("opinion_id:"+content[i]["id"]);
+			if(content[i]['id'] > last_id){
+				last_id = content[i]['id'];
+			}
+			//contentは以下の情報を含む
+			//id : 投稿のid
+			//user_id : 投稿したユーザーのid
+			//user_name : 投稿したユーザーの名前
+			//opinion : 投稿本体
+			//time_stamp : 投稿された日時
+			$("table.comment tbody").append(makeRow(content[i]));
+
+		}
+	}
+
+	function makeRow(param){
+		var user_id=param['user_id'];
+		var user_name=param['user_name'];
+		var opinion=param['opinion'];
+		var time_stamp=param['time_stamp'];
+
+		var newbody = $("<tr></tr>");
+		newbody.append("<td>"+user_name+"</td>");
+		newbody.append("<td>"+user_id+"</td>");
+		newbody.append("<td>"+time_stamp+"</td>");
+		newbody.append("<td>"+opinion+"</td>");
+
+		return newbody;
+	}
+
+	$("body").on("click","button.update.comment",function(){
+		ag.GetOpinions(last_id);
+	});
+
+
+</script>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<!--
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/21.0.1/jcanvas.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/css/theme.default.min.css">
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/js/jquery.tablesorter.min.js"></script>
+ -->
+
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<title>Audience Response System</title>
+	<meta name="description" content="Audience Response System" />
+	<meta name="author" content="Jiro Shimaya" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<script src="script/jquery/jquery-1.11.0.min.js"></script>
+	<link href="script/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<script src="script/bootstrap/js/bootstrap.min.js"></script>
+	<script src="js/AjaxUtils.js"></script>
+</head>
+<body>
+	<div class="container-fluid">
+
+	</div>
+	<div class="lyric"></div>
+	<audio class='countdown' src='sound/countdown.mp3'></audio>
+</body>
+<script type="text/javascript">
+	function makeLyricTable(param){
+		var original = param["original"];
+		var soramimi = param["soramimi"];
+
+		var table = $("<table><tr class='orginal'></tr><tr class='soramimi'></table>");
+		for(var i = 0; i<original.length; i++){
+			table.find("tr.orginal").append("<td>&nbsp"+original[i]+"&nbsp</td>");
+			table.find("tr.soramimi").append("<td><b><font size='+1'>&nbsp"+soramimi[i]+"&nbsp</font></b></td>");
+		}
+		table.find("td").css("text-align","center");
+		return table;
+
+	}
+	function makeTotalEvaluation(param){
+		var original = param["original"];
+		var soramimi = param["soramimi"];
+		var name = param['name'];
+
+		var div = $("<div class='total evaluation'></div>");
+		div.append("<div'>今の空耳歌(下記)について、全体としてどのくらい発音が似ていたか、どのくらい面白かったかを評価してください</div>");
+		div.append("<br>");
+		div.append("<br>");
+		div.append(makeLyricTable(param));
+		/*
+		var table = $("<table><tr class='orginal'></tr><tr class='soramimi'></table>");
+		for(var i = 0; i<original.length; i++){
+			table.find("tr.orginal").append("<td>&nbsp"+original[i]+"&nbsp</td>");
+			table.find("tr.soramimi").append("<td><b><font size='+1'>&nbsp"+soramimi[i]+"&nbsp</font></b></td>");
+		}
+		div.append(table);
+		*/
+		div.append("<br>");
+		div.append(makeRadioList({"measure":[["発音が似ていない","発音が似ている","total-similar"],["面白くない","面白い","total-funny"]],"level":7,"name":param["name"]}));
+		div.find('table td').css('text-align','center');
+
+		div.append("<button class='move next page'>次へ</button>");
+		return div;
+	}
+
+	function makePartEvaluation(param){
+		var original = param["original"];
+		var soramimi = param["soramimi"];
+		var name = param['name'];
+
+		var div = $("<div class='part evaluation'></div>");
+		div.append("<div>今の空耳歌の各文節について、発音がどのくらい似ていたか、どのくらい面白かったかを評価してください<br>面白さの評価は先程の歌を聞きながらの評価と異なっていても構いません</div>");
+
+		var table = $("<table border='1'><tr><th>文節</th><th>評価</th></tr></table>");
+		for(var i=0;i<original.length;i++){
+			table.append("<tr align='center'></tr>");
+			table.find("tr:last").append("<td>"+original[i]+"<br><font size='+1'><b>"+soramimi[i]+"</b></font></td>");
+			var td = $("<td></td>");
+			td.append(makeRadioList({"measure":[["発音が似ていない","発音が似ている","part-similar"],["面白くない","面白い","part-funny"]],"level":7,"name":param["name"]}));
+			table.find("tr:last").append(td);
+		}
+		table.find('th').css('text-align',"center");
+		table.find('th').css('padding','10px');
+		table.find('td').css('padding','3px 10px');
+		div.append(table);
+		div.append("<button class='move next page'>次へ</button>");
+		return div;
+	}
+
+	function makeRadioList(param){
+		var measure = param["measure"];
+		//console.log(JSON.stringify(measure));
+		//console.log(measure.length);
+		var level = param["level"];
+		var name = param["name"];
+
+		var table = $("<table><tbody></tbody></table>");
+		for(var i=0;i<2;i++){
+			var tm = measure[i];
+			//console.log(JSON.stringify(tm));
+			var indexleft = tm[0];
+			var indexright = tm[1];
+			var radiogroup = name+tm[2];
+
+			table.find("tbody").append("<tr><td align='center'>"+indexleft+"</td><td></td><td align='center'>"+indexright+"</td></tr>");
+			var text = "";//"<span>"+measure[0]+"</span>&nbsp";
+			for(var j=0;j<level;j++){
+				text +="&nbsp<input type=radio name='"+radiogroup+"' value='"+String(j)+"'>&nbsp";
+			}
+			table.find("tr:last td").eq(1).append(text);
+
+		}
+		return table;
+	}
+
+	function makeSoundControl(param){
+		var path = "sound/"+param["name"]+".wav";
+		var title = param["title"];
+
+		var divaudio = $("<div class='sound control'></div>");
+
+		divaudio.append("<div>下記の説明を読んだら「再生開始」を押して流れる歌を聞き、続いて表示される質問に回答してください</div>");
+		divaudio.append("<ul></ul>");
+		divaudio.find("ul:last").append("<li>「再生開始」を押すとカウントダウンのあと「"+title+"」を動物の名前だけで歌った空耳歌が流れます</li>");
+		divaudio.find("ul:last").append("<li>歌が流れている間、オリジナルの歌詞(上)と実際に歌われている空耳歌詞(下)が表示されています</li>");
+
+
+		divaudio.append("<audio class='song' src='"+path+"'></audio>");
+		divaudio.append("<button class='play'>再生開始</button>");
+		divaudio.append(makeLyricTable(param));
+		divaudio.find('table').css('display','none');
+		divaudio.find('table td').css('text-center','align');
+
+		return divaudio;
+	}
+
+	function makeLyricDisplay(param){
+		var div = $("<div class='lyric'></div>");
+		div.append("<div class='display'></div>");
+		div.append("<button class='send funny'>面白い</button>");
+		return div;
+	}
+
+	function countSongTime(param){
+		var original = param["original"];
+		var soramimi = param["soramimi"];
+		var time = param["time"];
+
+		setTimeout(function(){
+			setLyric(original[0],soramimi[0]);
+		},0);
+
+		for(var i=0;i<time.length-1;i++){
+			(function(index){
+				setTimeout(function(){
+					//setLyric(original[index+1],soramimi[index+1]);
+				},time[index]);
+			})(i);
+		}
+
+		setTimeout(function(){
+			setLyric("","");
+		},time[time.length-1]+1000);
+
+		setStartTime();
+	}
+
+	function setLyric(original,soramimi,area){
+		area.html("<p style='text-align:center'>"+original+"<br><b><font size='+1'>"+soramimi+"</font></b></p>");
+		nowParam["nowlyric"]=[original,soramimi];
+	}
+
+	function makeHeader(param){
+		var title = param["title"];
+		var header = $("<div class='header'></div>");
+		header.append("<button class='start answer'>開始</button>");
+		header.append("<span>"+title+"</span>");
+		return header;
+	}
+
+
+	function makeItem(param){
+		var item = $("<div class='song item'></div>");
+		var page0 = $("<div class='page zero'><div class='page number'>0</div></div>");
+		page0.append(makeHeader(param));
+		item.append(page0);
+
+		var page1 = $("<div class='page one'><div class='page number'>1</div></div>");
+		page1.append(makeSoundControl(param));
+		item.append(page1);
+
+		var page2 = $("<div class='page two'><div class='page number'>2</div></div>");
+		page2.append(makeTotalEvaluation(param));
+		item.append(page2);
+
+		var page3 = $("<div class='page three'><div class='page number'>3</div></div>");
+		page3.append(makePartEvaluation(param));
+		item.append(page3);
+		//item.append(makeRadioList({"measure":[["発音が似ていない","発音が似ている","similar"],["面白くない","面白い","funny"]],"level":7,"name":param["name"]}));
+		//param情報の保存
+		item.append("<span class='store parameter' style='display:none;'>"+JSON.stringify(param)+"</span>");
+
+		item.children('div.page.number').css('display','none');
+		return item;
+	}
+
+	function setPage(index, element){
+		element.find('div.page').css('display','none');
+		//number = ["zero","one","two","three","four","five"];
+		//element.find('div.page.'+number[index]).css('display','block');
+		switch(index){
+		case 0:
+			element.find('div.page.zero').css('display','block');
+			break;
+		case 1:
+			element.find('div.page.one').css('display','block');
+			break;
+		case 2:
+			element.find('div.page.two').css('display','block');
+			break;
+		case 3:
+			element.find('div.page.three').css('display','block');
+			break;
+		case 4:
+			element.find('div.page.four').css('display','block');
+			break;
+		default:
+			element.find('div.page.zero').css('display','block');
+			break;
+
+		}
+
+	}
+
+	function moveNextPage(element){
+		var number = Number(element.find('div.page.number').html());
+		number = (number+1)%4;
+		setPage(number,element);
+	}
+
+	function setEventTrigger(){
+		$("body").on("click","button.play",function(eo){
+			var thisbutton = $(eo.target);
+			$("audio.countdown")[0].play();
+			var div = thisbutton.closest("div.song.item");
+			var param = JSON.parse(div.find("span.store.parameter").html());
+			setTimeout(function(){
+				thisbutton.parent().find("audio")[0].play();
+				thisbutton.parent().find("table").css('display','block');
+				var time = param["time"];
+				var duration = param["duration"];
+				setTimeout(function(){
+					//setPage(2,thisbutton.closest("div.song.item"));
+					//alert("aaaa");
+					moveNextPage(div);
+				},duration+1000);
+			},5000);
+
+			nowParam = param;
+		});
+
+		$("body").on("click","button.send.funny",function(){
+			var original = nowParam["nowlyric"][0];
+			var soramimi = nowParam["nowlyric"][1];
+			var time = elapsedTime();
+			ag.SendFunny(original,soramimi,time)
+		});
+
+		$("body").on("click","button.start.answer",function(eo){
+			var thisbutton = $(eo.target);
+			moveNextPage(thisbutton.closest("div.song.item"));
+		});
+
+		$("body").on('click',"button.move.next.page",function(eo){
+			var thisbutton = $(eo.target);
+			moveNextPage(thisbutton.closest("div.song.item"));
+		});
+
+
+	}
+
+	var startTime;
+	function setStartTime(){
+		startTime = new Date();
+	}
+	function elapsedTime(){
+		var endTime = new Date();
+		return (endTime - startTime)/1000;
+	}
+	var nowParam;
+
+	var soramimilist = [];
+	//10
+	soramimilist.push({});
+	soramimilist[soramimilist.length-1]["original"]=["あおげば","とうとし","わが","しのおん","おしえの","にわにも","はや","いくとせ"];
+	soramimilist[soramimilist.length-1]["soramimi"]=["アオゲラ","オオワシ","パカ","ライオン","オシドリ","ニワトリ","ハス","アカトビ"];
+	soramimilist[soramimilist.length-1]["time"]=[3593,7102,8918,14266,17764,21301,23173,28409];
+	soramimilist[soramimilist.length-1]["duration"]=28409;
+	soramimilist[soramimilist.length-1]["name"]="aogeba10";
+	soramimilist[soramimilist.length-1]["title"]="仰げば尊し我が師の恩 教えの庭にも早幾年";
+	//10
+	soramimilist.push({});
+	soramimilist[soramimilist.length-1]["original"]=["かごめ","かごめ","かごのなかの","とりは","いついつであった","うしろの","しょうめん","だあれ"];
+	soramimilist[soramimilist.length-1]["soramimi"]=["カモメ","カモメ","コモンヨタカ","ゾリラ","ヒメウォンバット","シロウオ","ショウジョウ","マーラ"];
+	soramimilist[soramimilist.length-1]["duration"]=28409;
+	soramimilist[soramimilist.length-1]["title"]="かごめかごめ籠の中の鳥はいついつ出会った 後ろの正面だあれ";
+	soramimilist[soramimilist.length-1]["name"]="kagome10";
+	//10
+	soramimilist.push({});
+	soramimilist[soramimilist.length-1]["original"]=["でんでんむしむし","かたつむり","おまえの","めだまは","どこに","ある","つの","だせ","やり","だせ","めだま","だせ"];
+	soramimilist[soramimilist.length-1]["soramimi"]=["センダイムシクイ","カイツブリ","オオバン","アカマタ","ドンコ","サル","ツミ","ダツ","ヤギ","ダツ","メダカ","ダツ"];
+	soramimilist[soramimilist.length-1]["duration"]=28409;
+	soramimilist[soramimilist.length-1]["title"]="でんでんむしむしかたつむり お前の目玉はどこにある ツノ出せ槍だせ目玉出せ";
+	soramimilist[soramimilist.length-1]["name"]="katatsumuri10";
+	//10
+	soramimilist.push({});
+	soramimilist[soramimilist.length-1]["original"]=["ももたろさん","ももたろさん","おこしに","つけた","きびだんご","ひとつ","わたしに","くださいな"];
+	soramimilist[soramimilist.length-1]["soramimi"]=["カオジロガン","カオジロガン","オバシギ","ジュケイ","キジインコ","ヒツジ","タマシギ","ツルクイナ"];
+	soramimilist[soramimilist.length-1]["duration"]=28409;
+	soramimilist[soramimilist.length-1]["title"]="桃太郎さん桃太郎さん お腰につけたきびだんご 一つ私にくださいな";
+	soramimilist[soramimilist.length-1]["name"]="momotaro10";
+	//10
+	soramimilist.push({});
+	soramimilist[soramimilist.length-1]["original"]=["うみは","ひろいな","おおきいな","つきが","のぼるし","ひが","しずむ"];
+	soramimilist[soramimilist.length-1]["soramimi"]=["ウミウ","シロクマ","オニクイナ","タイラ","コブウシ","ヒヒ","スズメ"];
+	soramimilist[soramimilist.length-1]["duration"]=28409;
+	soramimilist[soramimilist.length-1]["title"]="海は広いな大きいな 月が昇るし日が沈む";
+	soramimilist[soramimilist.length-1]["name"]="umi10";
+
+
+	var param = {}
+	$("div.lyric").append("<br><br><br><br>");
+
+	param["original"]=["あおげば","とうとし","わが","しのおん"];
+	param["soramimi"]=["アオゲラ","オオワシ","パカ","ライオン","オシドリ","ニワトリ","ハス","アカトビ"];
+	$("div.lyric").append(makeLyricTable(param));
+	$("div.lyric").append("<br><br>");
+	param["original"]=["おしえの","にわにも","はや","いくとせ"];;
+	param["soramimi"]=["オシドリ","ニワトリ","ハス","アカトビ"];
+	$("div.lyric").append(makeLyricTable(param));
+
+	/*
+	param["original"]=["かごめ","かごめ","かごのなかの","とりは"];
+	param["soramimi"]=["カモメ","カモメ","コモンヨタカ","ゾリラ"];
+	$("div.lyric").append(makeLyricTable(param));
+	param["original"]=["いついつ","であった"];
+	param["soramimi"]=["イエイヌ","アカマタ"];
+	$("div.lyric").append("<br><br>");
+	$("div.lyric").append(makeLyricTable(param));
+	param["original"]=["うしろの","しょうめん","だあれ"];
+	param["soramimi"]=["シロウオ","ショウジョウ","マーラ"];
+	$("div.lyric").append("<br><br>");
+	$("div.lyric").append(makeLyricTable(param));
+	*/
+	param["original"]=["でんでんむしむし","かたつむり"];
+	param["soramimi"]=["センダイムシクイ","カイツブリ"];
+	//$("div.lyric").append(makeLyricTable(param));
+	param["original"]=["おまえの","めだまは","どこに","ある"];
+	param["soramimi"]=["オオバン","アカマタ","ドンコ","サル"];
+	//$("div.lyric").append("<br><br>");
+	//$("div.lyric").append(makeLyricTable(param));
+	param["original"]=["つの","だせ","やり","だせ","めだま","だせ"];
+	param["soramimi"]=["ツミ","ダツ","ヤギ","ダツ","メダカ","ダツ"];
+	//$("div.lyric").append("<br><br>");
+	//$("div.lyric").append(makeLyricTable(param));
+
+	param["original"]=["ももたろさん","ももたろさん"];
+	param["soramimi"]=["カオジロガン","カオジロガン"];
+	//$("div.lyric").append(makeLyricTable(param));
+	param["original"]=["おこしに","つけた","きびだんご"];
+	param["soramimi"]=["オバシギ","ジュケイ","キジインコ"];
+	//$("div.lyric").append("<br><br>");
+	//$("div.lyric").append(makeLyricTable(param));
+	param["original"]=["ひとつ","わたしに","くださいな"];
+	param["soramimi"]=["ヒツジ","タマシギ","ツルクイナ"];
+	//$("div.lyric").append("<br><br>");
+	//$("div.lyric").append(makeLyricTable(param));
+
+	/*
+	param["original"]=["うみは","ひろいな","おおきいな"];
+	param["soramimi"]=["ウミウ","シロクマ","オニクイナ"];
+	$("div.lyric").append(makeLyricTable(param));
+	param["original"]=["つきが","のぼるし","ひが","しずむ"];
+	param["soramimi"]=["タイラ","コブウシ","ヒヒ","スズメ"];
+	$("div.lyric").append("<br><br>");
+	$("div.lyric").append(makeLyricTable(param));
+	*/
+	$("div.lyric table").prop("align","center");
+
+	for(var i=0;i<soramimilist.length;i++){
+		$("div.container-fluid").append(makeItem(soramimilist[i]));
+		setPage(0,$("div.container-fluid").children("div:last"));
+	}
+	setEventTrigger();
+
+
+
+
+	var ag = new AjaxGateway();
+	//var last_id = 0;
+	//var connection_info = new ConnectionInfo(last_id);
+
+	$(window).on("load", function(e){
+		ag.Login();
+	});
+	//windowを閉じたらログアウト情報を保存
+	$(window).on("unload",function(e){
+		ag.Logout();
+	});
+
+
+	//テキストボックスでエンターキーを押したら送信ボタンが押されたことにする
+	$("body").on("keypress","input.message", function(e){
+		if ( e.which == 13 ) {
+			$("button.send.message").click();
+			return false;
+		}
+	});
+
+</script>
+</html>
